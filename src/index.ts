@@ -24,7 +24,7 @@ function convertBreakpointsToMediaQueries(breakpoints: BreakpointsOptions): Medi
 
 function subscribeToMediaQuery(id: string, mediaQuery: string, callback: (id: string) => any): () => any {
   const mql = window.matchMedia(mediaQuery)
-  const cb = ({ matches }) => {
+  const cb: (obj: any) => any = ({ matches }) => {
     if (matches) callback(id)
   }
   mql.addListener(cb) // subscribing
@@ -33,24 +33,23 @@ function subscribeToMediaQuery(id: string, mediaQuery: string, callback: (id: st
 }
 
 
-class ReactiveMediaQueries {
-  teardowns: Set<() => any> = new Set()
-  constructor(breakpoints: BreakpointsOptions, callback: (id: string) => any) {
-    const mediaQueriesStrings = convertBreakpointsToMediaQueries(breakpoints)
-    for (const key in mediaQueriesStrings) {
-      const mediaQuery = mediaQueriesStrings[key]
-      const teardown = subscribeToMediaQuery(key, mediaQuery, (id) => {
-        callback(id)
-      })
-      this.teardowns.add(teardown)
-    }
+function reactToBreakpoints(breakpoints: BreakpointsOptions, callback: (id: string) => any) {
+  const teardowns: Array<() => any> = []
+  const mediaQueriesStrings = convertBreakpointsToMediaQueries(breakpoints)
+  for (const key in mediaQueriesStrings) {
+    const mediaQuery = mediaQueriesStrings[key]
+    const teardown = subscribeToMediaQuery(key, mediaQuery, (id) => {
+      callback(id)
+    })
+    teardowns.push(teardown)
   }
-  destroy() {
-    for (const teardown of this.teardowns) {
+  const destroy = () => {
+    for (let teardown of teardowns) {
       teardown()
     }
   }
+  return destroy
 }
 
-export default ReactiveMediaQueries
+export default reactToBreakpoints
 

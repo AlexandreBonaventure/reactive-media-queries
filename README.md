@@ -10,15 +10,15 @@ yarn add reactive-media-queries
 ```
 
 ## Usage
-Create an instance:
-`new ReactiveMediaQueries(breakpoints, callback)`
-
-*Instance Methods*
-`destroy` -> Teardown all listeners
+This library exports a single function with the following signature:
+`reactToBreakpoints(breakpoints, callback) => teardownFunction`
+It returns a teardown function that you can use to remove all the DOM listeners.
 
 ## Example
 ```js
-const reactiveMediaQueries = new ReactiveMediaQueries({
+import reactToBreakpoints from 'reactive-media-queries'
+
+const teardownListeners = reactToBreakpoints({
   phone: 768,
   tablet: 1024,
   desktop: 1440,
@@ -29,12 +29,12 @@ const reactiveMediaQueries = new ReactiveMediaQueries({
   console.log('Current breakpoint is: ' + key);
 })
 
-// if you need to unsubscribe to media queries and detach event listeners just call destroy
-reactiveMediaQueries.destroy()
+// if you need to unsubscribe to media queries and detach event listeners just call the function return by reactToBreakpoints()
+teardownListeners()
 ```
 
 ### Need dynamic breakpoints?
-Just spawn a `new ReactiveMediaQueries(breakpoints)` 
+Just teardown previous listeners and run `reactToBreakpoints(newBreakpoints, callback)` 
 
 ## Usage with hooks (Vue, React, etc...)
 ### Vue composition API Example
@@ -44,14 +44,14 @@ import { ref } from '@vue/composition-api';
 
 const currentBreakpoint = ref(null);
 
-(() => new ReactiveMediaQueries({
+reactToBreakpoints({
   phone: 768,
   tablet: 1024,
   desktop: 1440,
   desktopXL: Infinity,
 }, (key) => {
   currentBreakpoint.value = key;
-}))();
+})();
 
 export default function useMQ () {
   return { currentBreakpoint };
